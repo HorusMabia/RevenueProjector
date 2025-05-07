@@ -3,18 +3,16 @@
 import { useState } from "react";
 import Image from "next/image";
 import { BadgeIndianRupee, Calculator, Info, Users } from "lucide-react";
-import {
-  Bar,
-  BarChart,
-  CartesianGrid,
-  Cell,
-  Pie,
-  PieChart,
-  ResponsiveContainer,
-  Tooltip as RechartsTooltip,
-  XAxis,
-  YAxis,
-} from "recharts";
+// import {
+//   Bar,
+//   BarChart,
+//   CartesianGrid,
+//   Cell,
+//   ResponsiveContainer,
+//   Tooltip as RechartsTooltip,
+//   XAxis,
+//   YAxis,
+// } from "recharts";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -44,25 +42,22 @@ export default function RevenueEstimator() {
   const [utilizationRate, setUtilizationRate] = useState<number>(70);
   const [totalCapacity, setTotalCapacity] = useState<number>(20);
   const [hourlyRate, setHourlyRate] = useState<number>(300);
-  const [foodBundleConversionRate, setFoodBundleConversionRate] = useState<number>(0);
+  const [foodBundleConversionRate, setFoodBundleConversionRate] =
+    useState<number>(0);
   const [averageFoodOrderValue, setAverageFoodOrderValue] = useState<number>(0);
+  const [foodDiscountPercentage, setFoodDiscountPercentage] =
+    useState<number>(0);
 
   // Calculate metrics
-  const currentCapacity = (arpu * sessionDuration) / 24;
-  const capacityUtilization = (currentCapacity / totalCapacity) * 100;
 
   // Revenue food bundle calculations
   const foodBundleDailyRevenue =
-    (foodBundleConversionRate / 100) * footfall * averageFoodOrderValue;
+    (foodBundleConversionRate / 100) * footfall * averageFoodOrderValue * (1 - foodDiscountPercentage / 100);
 
   // Revenue calculations based on hourly rate
   const dailyRevenue = arpu * footfall;
   const monthlyRevenue = dailyRevenue * 30;
-  const annualRevenue = dailyRevenue * 365;
-
-  // Potential revenue at target utilization
-  const potentialRevenue =
-    hourlyRate * ((totalCapacity * utilizationRate) / 100) * 24;
+  const annualRevenue = arpu * footfall * 365;
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -359,29 +354,29 @@ export default function RevenueEstimator() {
         </div>
 
         <div className="md:col-span-7">
-          <div className="grid gap-6">
+          <div className="grid gap-4">
             <Tabs
               defaultValue="FoodBundle"
-              className="w-full bg-black text-white p-4 rounded-lg"
+              className="w-full text-white  rounded-lg"
             >
-              <TabsList className="grid w-full grid-cols-3 my-2">
+              <TabsList className="grid w-full gap-x-2 grid-cols-3 mb-2">
                 <TabsTrigger
                   value="FoodBundle"
-                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 transition-all duration-200 font-medium py-2 rounded-md"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
                 >
                   Food Bundle
                 </TabsTrigger>
                 <TabsTrigger
                   value="ReturningCustomers"
-                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 transition-all duration-200 font-medium py-2 rounded-md"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
                 >
                   Returning Customers
                 </TabsTrigger>
                 <TabsTrigger
-                  value="something"
-                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-transparent data-[state=inactive]:text-gray-300 transition-all duration-200 font-medium py-2 rounded-md"
+                  value="PriceAdjustment"
+                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
                 >
-                  Password
+                  Price adjustment
                 </TabsTrigger>
               </TabsList>
 
@@ -404,12 +399,13 @@ export default function RevenueEstimator() {
                           min={0}
                           max={100}
                           step={1}
-                          onValueChange={(value) => setFoodBundleConversionRate
-                      (value[0])}
+                          onValueChange={(value) =>
+                            setFoodBundleConversionRate(value[0])
+                          }
                           className="px-2"
                         />
                         <div className="flex items-center px-2">
-                          <Input
+                          {/* <Input
                             id="hourlyRate"
                             value={foodBundleConversionRate}
                             onChange={(e) =>
@@ -417,12 +413,12 @@ export default function RevenueEstimator() {
                             }
                             className="w-22 text-right"
                             min={0}
-                          />
+                          /> */}
+                          <p className="w-22 text-right border-1 p-1 rounded-sm">{foodBundleConversionRate}</p>
                           <span className="ml-1">%</span>
                         </div>
                       </div>
                     </div>
-
                     <div className="flex items-center w-full justify-between space-y-2">
                       <div className="flex w-full items-center justify-between">
                         <Label
@@ -454,6 +450,23 @@ export default function RevenueEstimator() {
                           <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
                         </div>
                       </div>
+                    </div>
+                    <div className="flex items-center w-full justify-between space-y-2">
+                      <Label className="text-sm w-full">
+                        Discount percentage on food bundle
+                      </Label>
+                      <Input
+                        id="DiscountPercentage"
+                        value={foodDiscountPercentage}
+                        onChange={(e) =>
+                          setFoodDiscountPercentage(Number(e.target.value))
+                        }
+                        className="w-22 text-right"
+                        placeholder="Discount Percentage"
+                        min={0}
+                        max={100}
+                      />
+                      <span className="ml-1">%</span>
                     </div>
                     <CardFooter>
                       <div className="flex w-full justify-end text-green-500">
@@ -469,167 +482,23 @@ export default function RevenueEstimator() {
               </TabsContent>
 
               <TabsContent value="ReturningCustomers">
-              <Card>
+                <Card>
                   <CardHeader>
-                    <CardTitle>Loyalty parameters</CardTitle>
+                    <CardTitle>Coming soon...</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex items-center w-full justify-between space-y-2">
-                      <div className="flex w-full items-center justify-between">
-                        <Label
-                          htmlFor="ConversionRate"
-                          className="flex w-86 items-center gap-1"
-                        >
-                          Conversion Rate
-                        </Label>
-                        <Slider
-                          value={[foodBundleConversionRate]}
-                          min={0}
-                          max={100}
-                          step={1}
-                          onValueChange={(value) => setFoodBundleConversionRate
-                      (value[0])}
-                          className="px-2"
-                        />
-                        <div className="flex items-center px-2">
-                          <Input
-                            id="hourlyRate"
-                            value={foodBundleConversionRate}
-                            onChange={(e) =>
-                              setHourlyRate(Number(e.target.value))
-                            }
-                            className="w-22 text-right"
-                            min={0}
-                          />
-                          <span className="ml-1">%</span>
-                        </div>
-                      </div>
-                    </div>
+                </Card>
+              </TabsContent>
 
-                    <div className="flex items-center w-full justify-between space-y-2">
-                      <div className="flex w-full items-center justify-between">
-                        <Label
-                          htmlFor="ConversionRate"
-                          className="flex w-86 items-center gap-1"
-                        >
-                          Average Order Value
-                        </Label>
-                        <Slider
-                          value={[averageFoodOrderValue]}
-                          min={0}
-                          max={1000000}
-                          step={20000}
-                          onValueChange={(value) =>
-                            setAverageFoodOrderValue(value[0])
-                          }
-                          className="px-2"
-                        />
-                        <div className="flex items-center px-2">
-                          <Input
-                            id="hourlyRate"
-                            value={averageFoodOrderValue}
-                            onChange={(e) =>
-                              setHourlyRate(Number(e.target.value))
-                            }
-                            className="w-22 text-right"
-                            min={0}
-                          />
-                          <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
-                        </div>
-                      </div>
-                    </div>
-                    <CardFooter>
-                      <div className="flex w-full justify-end text-green-500">
-                        <div className="flex gap-x-2 items-center">
-                          <p className="text-sm font-bold">{`+ ${formatCurrency(
-                            foodBundleDailyRevenue
-                          )}`}</p>
-                        </div>
-                      </div>
-                    </CardFooter>
-                  </CardContent>
+              <TabsContent value="PriceAdjustment">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Coming soon...</CardTitle>
+                  </CardHeader>
                 </Card>
               </TabsContent>
             </Tabs>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Food Bundle parameters</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center w-full justify-between space-y-2">
-                  <div className="flex w-full items-center justify-between">
-                    <Label
-                      htmlFor="ConversionRate"
-                      className="flex w-86 items-center gap-1"
-                    >
-                      Conversion Rate
-                    </Label>
-                    <Slider
-                      value={[foodBundleConversionRate]}
-                      min={0}
-                      max={100}
-                      step={1}
-                      onValueChange={(value) => setFoodBundleConversionRate
-                  (value[0])}
-                      className="px-2"
-                    />
-                    <div className="flex items-center px-2">
-                      <Input
-                        id="hourlyRate"
-                        value={foodBundleConversionRate}
-                        onChange={(e) => setHourlyRate(Number(e.target.value))}
-                        className="w-22 text-right"
-                        min={0}
-                      />
-                      <span className="ml-1">%</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex items-center w-full justify-between space-y-2">
-                  <div className="flex w-full items-center justify-between">
-                    <Label
-                      htmlFor="ConversionRate"
-                      className="flex w-86 items-center gap-1"
-                    >
-                      Average Order Value
-                    </Label>
-                    <Slider
-                      value={[averageFoodOrderValue]}
-                      min={0}
-                      max={1000000}
-                      step={20000}
-                      onValueChange={(value) => setAverageFoodOrderValue(value[0])}
-                      className="px-2"
-                    />
-                    <div className="flex items-center px-2">
-                      <Input
-                        id="hourlyRate"
-                        value={averageFoodOrderValue}
-                        onChange={(e) => setHourlyRate(Number(e.target.value))}
-                        className="w-22 text-right"
-                        min={0}
-                      />
-                      <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
-                    </div>
-                  </div>
-                </div>
-                <CardFooter>
-                  <div className="flex w-full justify-end text-green-500">
-                    <div className="flex gap-x-2 items-center">
-                      <p className="text-sm font-bold">{`+ ${formatCurrency(
-                        foodBundleDailyRevenue
-                      )}`}</p>
-                    </div>
-                  </div>
-                </CardFooter>
-              </CardContent>
-            </Card>
-
-            {/* ok */}
-
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Revenue Analysis</CardTitle>
                 <CardDescription>
@@ -685,8 +554,8 @@ export default function RevenueEstimator() {
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
                         data={[
-                          { name: "Current", value: dailyRevenue },
-                          { name: "Potential", value: potentialRevenue },
+                          { name: "Current", value: annualRevenue },
+                          { name: "Potential", value: potentialAnnualRevenue },
                         ]}
                         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                       >
@@ -762,17 +631,15 @@ export default function RevenueEstimator() {
                           Potential Daily Revenue
                         </p>
                         <p className="font-medium">
-                          {formatCurrency(potentialRevenue)}
+                          {formatCurrency(potentialAnnualRevenue)}
                         </p>
                       </div>
                     </div>
                   </div>
                 </div>
               </CardContent>
-            </Card>
-
-            {/* ok */}
-
+            </Card> */}
+            <Separator />
             <Card>
               <CardHeader>
                 <CardTitle>Revenue Projections</CardTitle>
@@ -807,178 +674,6 @@ export default function RevenueEstimator() {
                       {formatCurrency(annualRevenue)}
                     </p>
                     <p className="text-sm text-muted-foreground">(365 days)</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Capacity Analysis</CardTitle>
-                <CardDescription>
-                  Current utilization and potential revenue
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">
-                      Current Utilization
-                    </span>
-                    <span className="font-medium">
-                      {capacityUtilization.toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="h-2 bg-muted rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${
-                        capacityUtilization > 90
-                          ? "bg-red-500"
-                          : capacityUtilization > 70
-                          ? "bg-amber-500"
-                          : "bg-green-500"
-                      }`}
-                      style={{
-                        width: `${Math.min(capacityUtilization, 100)}%`,
-                      }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-foreground">
-                    <span>0%</span>
-                    <span>50%</span>
-                    <span>100%</span>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="h-[200px]">
-                    <p className="text-sm font-medium mb-2 text-center">
-                      Capacity Utilization
-                    </p>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <PieChart>
-                        <Pie
-                          data={[
-                            { name: "Used", value: currentCapacity },
-                            {
-                              name: "Available",
-                              value: Math.max(
-                                0,
-                                totalCapacity - currentCapacity
-                              ),
-                            },
-                          ]}
-                          cx="50%"
-                          cy="50%"
-                          innerRadius={60}
-                          outerRadius={80}
-                          paddingAngle={5}
-                          dataKey="value"
-                          label={({ name, percent }) =>
-                            `${name} ${(percent * 100).toFixed(0)}%`
-                          }
-                        >
-                          <Cell fill="#3b82f6" />
-                          <Cell fill="#e5e7eb" />
-                        </Pie>
-                        <RechartsTooltip
-                          formatter={(value) => [
-                            `${Number(value).toFixed(1)} customers/hour`,
-                            "",
-                          ]}
-                        />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </div>
-
-                  <div className="h-[200px]">
-                    <p className="text-sm font-medium mb-2 text-center">
-                      Current vs Potential Revenue
-                    </p>
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart
-                        data={[
-                          { name: "Current", value: dailyRevenue },
-                          { name: "Potential", value: potentialRevenue },
-                        ]}
-                        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-                      >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" />
-                        <YAxis
-                          tickFormatter={(value) =>
-                            value >= 1000000
-                              ? `$${(value / 1000000).toFixed(0)}M`
-                              : value >= 1000
-                              ? `$${(value / 1000).toFixed(0)}K`
-                              : `$${value}`
-                          }
-                        />
-                        <RechartsTooltip
-                          formatter={(value) => [
-                            `${formatCurrency(Number(value))}`,
-                            "Revenue",
-                          ]}
-                        />
-                        <Bar dataKey="value" name="Daily Revenue">
-                          <Cell fill="#10b981" />
-                          <Cell fill="#3b82f6" />
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">
-                      Current Metrics
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Current Capacity
-                        </p>
-                        <p className="font-medium">
-                          {currentCapacity.toFixed(1)} customers/hour
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Daily Revenue
-                        </p>
-                        <p className="font-medium">
-                          {formatCurrency(dailyRevenue)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <h4 className="text-sm font-medium mb-1">
-                      Potential at {utilizationRate}% Utilization
-                    </h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Target Capacity
-                        </p>
-                        <p className="font-medium">
-                          {((totalCapacity * utilizationRate) / 100).toFixed(1)}{" "}
-                          customers/hour
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">
-                          Potential Daily Revenue
-                        </p>
-                        <p className="font-medium">
-                          {formatCurrency(potentialRevenue)}
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </div>
               </CardContent>
