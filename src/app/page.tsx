@@ -38,15 +38,15 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
 export default function RevenueEstimator() {
   const [arpu, setArpu] = useState<number>(500000);
   const [footfall, setFootfall] = useState<number>(7);
-  const [sessionDuration, setSessionDuration] = useState<number>(3);
-  const [utilizationRate, setUtilizationRate] = useState<number>(70);
+  // const [sessionDuration, setSessionDuration] = useState<number>(3);
+  // const [utilizationRate, setUtilizationRate] = useState<number>(70);
   const [totalCapacity, setTotalCapacity] = useState<number>(20);
-  const [hourlyRate, setHourlyRate] = useState<number>(300);
+  // const [hourlyRate, setHourlyRate] = useState<number>(300);
   const [foodBundleConversionRate, setFoodBundleConversionRate] =
     useState<number>(0);
   const [averageFoodOrderValue, setAverageFoodOrderValue] = useState<number>(0);
-  const [foodDiscountPercentage, setFoodDiscountPercentage] =
-    useState<number>(0);
+  const [foodDiscountPercentage, setFoodDiscountPercentage] = useState<number>(0);
+  const [foodConversionRate, setFoodConversionRate] = useState<number>(0);
 
   // Calculate metrics
 
@@ -58,6 +58,12 @@ export default function RevenueEstimator() {
   const dailyRevenue = arpu * footfall;
   const monthlyRevenue = dailyRevenue * 30;
   const annualRevenue = arpu * footfall * 365;
+
+  const dailyRevenueWithFoodBundle = dailyRevenue + foodBundleDailyRevenue;
+  const monthlyRevenueWithFoodBundle =
+    dailyRevenueWithFoodBundle * 30;
+  const annualRevenueWithFoodBundle =
+    dailyRevenueWithFoodBundle * 365;
 
   // Format currency
   const formatCurrency = (value: number) => {
@@ -134,6 +140,44 @@ export default function RevenueEstimator() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
+                  <Label htmlFor="arpu" className="flex items-center gap-1">
+                    F&B Conversion Rate
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="w-[200px]">
+                            Percentage of PC users buying food or drinks
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </Label>
+                  <div className="flex items-center gap-2">
+                    <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
+                    <Input
+                      id="arpu"
+                      type="number"
+                      value={foodConversionRate}
+                      placeholder={"20%"}
+                      onChange={(e) => setFoodConversionRate(Number(e.target.value))}
+                      className="w-32 text-right"
+                    />
+                  </div>
+                </div>
+                <Slider
+                  value={[foodConversionRate]}
+                  min={0}
+                  max={100}
+                  step={1}
+                  onValueChange={(value) => setFoodConversionRate(value[0])}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
                   <Label htmlFor="footfall" className="flex items-center gap-1">
                     Customer Footfall
                     <TooltipProvider>
@@ -172,90 +216,6 @@ export default function RevenueEstimator() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <Label
-                    htmlFor="sessionDuration"
-                    className="flex items-center gap-1"
-                  >
-                    Avg. Session Duration
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="w-[200px]">
-                            Average time (in hours) each customer spends
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </Label>
-                  <Input
-                    id="sessionDuration"
-                    type="number"
-                    value={sessionDuration}
-                    onChange={(e) => setSessionDuration(Number(e.target.value))}
-                    className="w-20 text-right"
-                    step={0.1}
-                    min={0.1}
-                    max={10}
-                  />
-                </div>
-                <Slider
-                  value={[sessionDuration * 10]}
-                  min={1}
-                  max={50}
-                  step={1}
-                  onValueChange={(value) => setSessionDuration(value[0] / 10)}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label
-                    htmlFor="utilizationRate"
-                    className="flex items-center gap-1"
-                  >
-                    Capacity Utilization Rate
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="w-[200px]">
-                            Target percentage of total capacity to utilize
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </Label>
-                  <div className="flex items-center">
-                    <Input
-                      id="utilizationRate"
-                      type="number"
-                      value={utilizationRate}
-                      onChange={(e) =>
-                        setUtilizationRate(Number(e.target.value))
-                      }
-                      className="w-20 text-right"
-                      min={1}
-                      max={100}
-                    />
-                    <span className="ml-1">%</span>
-                  </div>
-                </div>
-                <Slider
-                  value={[utilizationRate]}
-                  min={1}
-                  max={100}
-                  step={1}
-                  onValueChange={(value) => setUtilizationRate(value[0])}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label
                     htmlFor="totalCapacity"
                     className="flex items-center gap-1"
                   >
@@ -284,54 +244,6 @@ export default function RevenueEstimator() {
                     max={20}
                   />
                 </div>
-                <Slider
-                  value={[totalCapacity]}
-                  min={0}
-                  max={20}
-                  step={1}
-                  onValueChange={(value) => setTotalCapacity(value[0])}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Label
-                    htmlFor="hourlyRate"
-                    className="flex items-center gap-1"
-                  >
-                    Hourly Rate
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="w-[200px]">
-                            The rate you charge customers per hour
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </Label>
-                  <div className="flex items-center gap-2">
-                    <BadgeIndianRupee className="h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="hourlyRate"
-                      type="number"
-                      value={hourlyRate}
-                      onChange={(e) => setHourlyRate(Number(e.target.value))}
-                      className="w-20 text-right"
-                      min={1}
-                    />
-                  </div>
-                </div>
-                <Slider
-                  value={[hourlyRate]}
-                  min={1}
-                  max={200}
-                  step={1}
-                  onValueChange={(value) => setHourlyRate(value[0])}
-                />
               </div>
             </CardContent>
             <CardFooter>
@@ -340,10 +252,7 @@ export default function RevenueEstimator() {
                 onClick={() => {
                   setArpu(500000);
                   setFootfall(5);
-                  setSessionDuration(3);
-                  setUtilizationRate(70);
                   setTotalCapacity(150);
-                  setHourlyRate(25);
                 }}
                 variant="outline"
               >
@@ -368,13 +277,13 @@ export default function RevenueEstimator() {
                 </TabsTrigger>
                 <TabsTrigger
                   value="ReturningCustomers"
-                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
+                  className=" hidden data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
                 >
                   Returning Customers
                 </TabsTrigger>
                 <TabsTrigger
                   value="PriceAdjustment"
-                  className="data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
+                  className="hidden data-[state=active]:bg-white data-[state=active]:text-black data-[state=inactive]:bg-white/60 data-[state=inactive]:text-gray-900 transition-all duration-200 font-medium py-2 rounded-md"
                 >
                   Price adjustment
                 </TabsTrigger>
@@ -392,12 +301,12 @@ export default function RevenueEstimator() {
                           htmlFor="ConversionRate"
                           className="flex w-86 items-center gap-1"
                         >
-                          Conversion Rate
+                          Conversion Rate Increase
                         </Label>
                         <Slider
                           value={[foodBundleConversionRate]}
                           min={0}
-                          max={100}
+                          max={100-foodConversionRate}
                           step={1}
                           onValueChange={(value) =>
                             setFoodBundleConversionRate(value[0])
@@ -442,7 +351,7 @@ export default function RevenueEstimator() {
                             id="hourlyRate"
                             value={averageFoodOrderValue}
                             onChange={(e) =>
-                              setHourlyRate(Number(e.target.value))
+                              setAverageFoodOrderValue(Number(e.target.value))
                             }
                             className="w-22 text-right"
                             min={0}
@@ -643,9 +552,6 @@ export default function RevenueEstimator() {
             <Card>
               <CardHeader>
                 <CardTitle>Revenue Projections</CardTitle>
-                <CardDescription>
-                  Based on your input parameters
-                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -653,27 +559,31 @@ export default function RevenueEstimator() {
                     <p className="text-sm font-medium text-muted-foreground">
                       Daily
                     </p>
-                    <p className="text-2xl font-bold">
-                      {formatCurrency(dailyRevenue)}
+                    <p className={`${dailyRevenueWithFoodBundle>0 ? "text-green-500" : "text-red-500"}text-xl font-bold text-green-400`}>
+                      {formatCurrency(dailyRevenueWithFoodBundle)}
                     </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
                       Monthly
                     </p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold text-red-400">
                       {formatCurrency(monthlyRevenue)}
                     </p>
-                    <p className="text-sm text-muted-foreground">(30 days)</p>
+                    <p className="text-xl font-bold text-green-400">
+                      {formatCurrency(monthlyRevenueWithFoodBundle)}
+                    </p>
                   </div>
                   <div className="space-y-2">
                     <p className="text-sm font-medium text-muted-foreground">
                       Annual
                     </p>
-                    <p className="text-2xl font-bold">
+                    <p className="text-xl font-bold text-red-400">
                       {formatCurrency(annualRevenue)}
                     </p>
-                    <p className="text-sm text-muted-foreground">(365 days)</p>
+                    <p className="text-xl font-bold text-green-400">
+                      {formatCurrency(annualRevenueWithFoodBundle)}
+                    </p>
                   </div>
                 </div>
               </CardContent>
