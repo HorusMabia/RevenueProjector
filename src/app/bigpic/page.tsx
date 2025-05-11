@@ -27,43 +27,42 @@ import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 
-// Define the Scenario type
-interface Scenario {
-  id: string
-  name: string
-  arpu: number
-  footfall: number
-  sessionDuration: number
-  utilizationRate: number
-  totalCapacity: number
-  hourlyRate: number
-  hoursPerDay: number
-  createdAt: Date
+// Define the metrics type
+interface businessDailyMetris {
+  computerRevenuePerUser: number
+  capacity: number
+  capacityUsage: number
+  foodRevenuePerUser: number
+  foodConsumerRate: number
 }
 
-// Function to calculate metrics based on scenario parameters
-const calculateMetrics = (scenario: Scenario) => {
-  const currentCapacity = (scenario.footfall * scenario.sessionDuration) / scenario.hoursPerDay
-  const capacityUtilization = (currentCapacity / scenario.totalCapacity) * 100
+// Function to calculate metrics based on metrics parameters
+const calculateMetrics = (metrics: businessDailyMetris) => {
 
-  // Revenue calculations based on hourly rate
-  const hourlyRevenue = scenario.hourlyRate * currentCapacity
-  const dailyRevenue = hourlyRevenue * scenario.hoursPerDay
+  // Daily users
+  const dailyCustomerCount = metrics.capacity * metrics.capacityUsage
+  const arpu = metrics.foodRevenuePerUser + metrics.computerRevenuePerUser
+
+  const computerRevenuePerUser = metrics.computerRevenuePerUser
+  const capacity = metrics.capacity
+  const capacityUsage = metrics.capacityUsage
+  const foodRevenuePerUser = metrics.foodRevenuePerUser
+  const foodConsumerRate = metrics.foodConsumerRate
+  // Revenue calculations based on daily rate
+  const dailyRevenue = dailyCustomerCount * arpu
   const monthlyRevenue = dailyRevenue * 30
   const annualRevenue = dailyRevenue * 365
 
-  // Potential revenue at target utilization
-  const potentialRevenue =
-    scenario.hourlyRate * ((scenario.totalCapacity * scenario.utilizationRate) / 100) * scenario.hoursPerDay
-
   return {
-    currentCapacity,
-    capacityUtilization,
-    hourlyRevenue,
+    arpu,
     dailyRevenue,
     monthlyRevenue,
     annualRevenue,
-    potentialRevenue,
+    computerRevenuePerUser,
+    capacity,
+    capacityUsage,
+    foodRevenuePerUser,
+    foodConsumerRate
   }
 }
 
@@ -77,35 +76,28 @@ const formatCurrency = (value: number) => {
 }
 
 export default function RevenueEstimator() {
-  // Default scenario values
-  const defaultScenario: Omit<Scenario, "id" | "name" | "createdAt"> = {
-    arpu: 50,
-    footfall: 100,
-    sessionDuration: 1,
-    utilizationRate: 70,
-    totalCapacity: 150,
-    hourlyRate: 25,
-    hoursPerDay: 8,
+  // Default metrics values
+  const defaultmetrics: businessDailyMetris = {
+    computerRevenuePerUser: 50,
+    capacity: 100,
+    capacityUsage: 1,
+    foodRevenuePerUser: 70,
+    foodConsumerRate: 150,
   }
 
-  // State for current scenario
-  const [currentScenario, setCurrentScenario] = useState<Scenario>({
-    id: "current",
-    name: "Current Scenario",
-    ...defaultScenario,
-    createdAt: new Date(),
-  })
+  // State for current metrics
+  const [metrics, setMetrics] = useState<businessDailyMetris>({...defaultmetrics})
 
   const pieData = useMemo(
     () => [
-      { name: "Converting", value: 50, fill: "hsl(var(--chart-1))" },
-      { name: "Non-Converting", value: 100 - 50, fill: "hsl(var(--chart-2))" },
+      { name: "Converting", value: metrics.foodConsumerRate, fill: "hsl(var(--chart-1))" },
+      { name: "Non-Converting", value: 100 - metrics.foodConsumerRate, fill: "hsl(var(--chart-2))" },
     ],
     [],
   )
 
-  // Calculate metrics for current scenario
-  const currentMetrics = calculateMetrics(currentScenario)
+  // Calculate metrics for current metrics
+  const currentMetrics = calculateMetrics(metrics)
 
   return (
     <div className="text-white mx-auto py-10 px-4 max-w-5xl">
@@ -131,26 +123,26 @@ export default function RevenueEstimator() {
           <CardContent className="space-y-6">
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="arpu" className="flex items-center gap-1">
-                  ARPU
+                <Label htmlFor="computer_arpu" className="flex items-center gap-1">
+                  computer_arpu
                 </Label>
                 <div className="flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                   <Input
-                    id="arpu"
+                    id="computer_arpu"
                     type="number"
-                    value={currentScenario.arpu}
-                    onChange={(e) => setCurrentScenario({ ...currentScenario, arpu: Number(e.target.value) })}
+                    value={currentMetrics.computerRevenuePerUser}
+                    onChange={(e) => setMetrics({ ...currentMetrics, computerRevenuePerUser: Number(e.target.value) })}
                     className="w-20 text-right"
                   />
                 </div>
               </div>
               <Slider
-                value={[currentScenario.arpu]}
+                value={[currentMetrics.computerRevenuePerUser]}
                 min={1}
                 max={200}
                 step={1}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, arpu: value[0] })}
+                onValueChange={(value) => setMetrics({ ...currentMetrics, computerRevenuePerUser: value[0] })}
               />
             </div>
 
@@ -164,46 +156,18 @@ export default function RevenueEstimator() {
                   <Input
                     id="footfall"
                     type="number"
-                    value={currentScenario.footfall}
-                    onChange={(e) => setCurrentScenario({ ...currentScenario, footfall: Number(e.target.value) })}
+                    value={currentMetrics.capacity}
+                    onChange={(e) => setMetrics({ ...currentMetrics, capacity: Number(e.target.value) })}
                     className="w-20 text-right"
                   />
                 </div>
               </div>
               <Slider
-                value={[currentScenario.footfall]}
-                min={1}
-                max={500}
-                step={1}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, footfall: value[0] })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="sessionDuration" className="flex items-center gap-1">
-                  Avg. Session Duration
-                </Label>
-                <Input
-                  id="sessionDuration"
-                  type="number"
-                  value={currentScenario.sessionDuration}
-                  onChange={(e) =>
-                    setCurrentScenario({ ...currentScenario, sessionDuration: Number(e.target.value) })
-                  }
-                  className="w-20 text-right"
-                  step={0.1}
-                  min={0.1}
-                />
-              </div>
-              <Slider
-                value={[currentScenario.sessionDuration * 10]}
+                value={[currentMetrics.capacity]}
                 min={1}
                 max={50}
                 step={1}
-                onValueChange={(value) =>
-                  setCurrentScenario({ ...currentScenario, sessionDuration: value[0] / 10 })
-                }
+                onValueChange={(value) => setMetrics({ ...currentMetrics, capacity: value[0] })}
               />
             </div>
 
@@ -216,9 +180,9 @@ export default function RevenueEstimator() {
                   <Input
                     id="utilizationRate"
                     type="number"
-                    value={currentScenario.utilizationRate}
+                    value={currentMetrics.capacityUsage}
                     onChange={(e) =>
-                      setCurrentScenario({ ...currentScenario, utilizationRate: Number(e.target.value) })
+                      setMetrics({ ...currentMetrics, capacityUsage: Number(e.target.value) })
                     }
                     className="w-20 text-right"
                     min={1}
@@ -228,86 +192,36 @@ export default function RevenueEstimator() {
                 </div>
               </div>
               <Slider
-                value={[currentScenario.utilizationRate]}
+                value={[currentMetrics.capacityUsage]}
                 min={1}
                 max={100}
                 step={1}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, utilizationRate: value[0] })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="totalCapacity" className="flex items-center gap-1">
-                  Total Capacity
-                </Label>
-                <Input
-                  id="totalCapacity"
-                  type="number"
-                  value={currentScenario.totalCapacity}
-                  onChange={(e) =>
-                    setCurrentScenario({ ...currentScenario, totalCapacity: Number(e.target.value) })
-                  }
-                  className="w-20 text-right"
-                  min={1}
-                />
-              </div>
-              <Slider
-                value={[currentScenario.totalCapacity]}
-                min={10}
-                max={500}
-                step={10}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, totalCapacity: value[0] })}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="hourlyRate" className="flex items-center gap-1">
-                  Hourly Rate
-                </Label>
-                <div className="flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="hourlyRate"
-                    type="number"
-                    value={currentScenario.hourlyRate}
-                    onChange={(e) => setCurrentScenario({ ...currentScenario, hourlyRate: Number(e.target.value) })}
-                    className="w-20 text-right"
-                    min={1}
-                  />
-                </div>
-              </div>
-              <Slider
-                value={[currentScenario.hourlyRate]}
-                min={1}
-                max={200}
-                step={1}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, hourlyRate: value[0] })}
+                onValueChange={(value) => setMetrics({ ...currentMetrics, capacityUsage: value[0] })}
               />
             </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="hoursPerDay" className="flex items-center gap-1">
-                  Hours of Operation
+                  Food revenue per user
                 </Label>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
                 <Input
                   id="hoursPerDay"
                   type="number"
-                  value={currentScenario.hoursPerDay}
-                  onChange={(e) => setCurrentScenario({ ...currentScenario, hoursPerDay: Number(e.target.value) })}
+                  value={currentMetrics.foodRevenuePerUser}
+                  onChange={(e) => setMetrics({ ...currentMetrics, foodRevenuePerUser: Number(e.target.value) })}
                   className="w-20 text-right"
                   min={1}
-                  max={24}
+                  max={25}
                 />
               </div>
               <Slider
-                value={[currentScenario.hoursPerDay]}
+                value={[currentMetrics.foodRevenuePerUser]}
                 min={1}
-                max={24}
+                max={25}
                 step={1}
-                onValueChange={(value) => setCurrentScenario({ ...currentScenario, hoursPerDay: value[0] })}
+                onValueChange={(value) => setMetrics({ ...currentMetrics, foodRevenuePerUser: value[0] })}
               />
             </div>
           </CardContent>
@@ -315,9 +229,9 @@ export default function RevenueEstimator() {
             <Button
               className="w-full"
               onClick={() => {
-                setCurrentScenario({
-                  ...currentScenario,
-                  ...defaultScenario,
+                setMetrics({
+                  ...currentMetrics,
+                  ...defaultmetrics,
                 })
               }}
               variant="outline"
@@ -327,6 +241,7 @@ export default function RevenueEstimator() {
           </CardFooter>
           </Card>
         </div>
+
         <div className="col-span-2 flex flex-col gap-y-2">
           <div className="h-fit">
             <Card>
@@ -337,12 +252,12 @@ export default function RevenueEstimator() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div className="space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground">Daily</p>
+                  <p className="text-sm font-medium text-muted-foreground">ARPU</p>
                   <div className="flex items-center gap-2">
                     <p className="text-2xl font-bold">{formatCurrency(currentMetrics.dailyRevenue)}</p>
                   </div>
                   <p className="text-sm text-muted-foreground">
-                    Hourly: {formatCurrency(currentMetrics.hourlyRevenue)}
+                    Hourly: {formatCurrency(currentMetrics.arpu)}
                   </p>
                 </div>
                 <div className="space-y-2">
@@ -525,7 +440,7 @@ export default function RevenueEstimator() {
                           },
                           {
                             name: "Potential",
-                            current: currentMetrics.potentialRevenue,
+                            current: currentMetrics.arpu,
                           },
                         ]}
                         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
@@ -560,7 +475,7 @@ export default function RevenueEstimator() {
                       <div>
                         <p className="text-sm text-muted-foreground">Current Capacity</p>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{currentMetrics.currentCapacity.toFixed(1)} customers/hour</p>
+                          <p className="font-medium">{currentMetrics.capacity.toFixed(1)} customers/hour</p>
                         </div>
                       </div>
                       <div>
@@ -574,14 +489,14 @@ export default function RevenueEstimator() {
 
                   <div>
                     <h4 className="text-sm font-medium mb-1">
-                      Potential at {currentScenario.utilizationRate}% Utilization
+                      Potential at {currentMetrics.capacityUsage}% Utilization
                     </h4>
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-muted-foreground">Target Capacity</p>
                         <div className="flex items-center gap-2">
                           <p className="font-medium">
-                            {((currentScenario.totalCapacity * currentScenario.utilizationRate) / 100).toFixed(1)}{" "}
+                            {((currentMetrics.capacity * currentMetrics.capacityUsage) / 100).toFixed(1)}{" "}
                             customers/hour
                           </p>
                         </div>
@@ -589,7 +504,7 @@ export default function RevenueEstimator() {
                       <div>
                         <p className="text-sm text-muted-foreground">Potential Daily Revenue</p>
                         <div className="flex items-center gap-2">
-                          <p className="font-medium">{formatCurrency(currentMetrics.potentialRevenue)}</p>
+                          <p className="font-medium">{formatCurrency(currentMetrics.arpu)}</p>
                         </div>
                       </div>
                     </div>
