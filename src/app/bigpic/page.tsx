@@ -22,7 +22,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Slider } from "@/components/ui/slider"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
@@ -82,7 +81,7 @@ export default function RevenueEstimator() {
     capacity: 100,
     capacityUsage: 1,
     foodRevenuePerUser: 70,
-    foodConsumerRate: 150,
+    foodConsumerRate: 50,
   }
 
   // State for current metrics
@@ -90,10 +89,10 @@ export default function RevenueEstimator() {
 
   const pieData = useMemo(
     () => [
-      { name: "Converting", value: metrics.foodConsumerRate, fill: "hsl(var(--chart-1))" },
-      { name: "Non-Converting", value: 100 - metrics.foodConsumerRate, fill: "hsl(var(--chart-2))" },
+      { name: "Computer revenue", value: metrics.foodConsumerRate, fill: "#3a8dde" },
+      { name: "Food sale revenue", value: 100 - metrics.foodConsumerRate, fill: "#ffa400" },
     ],
-    [],
+    [metrics],
   )
 
   // Calculate metrics for current metrics
@@ -177,6 +176,7 @@ export default function RevenueEstimator() {
                   Capacity Utilization Rate
                 </Label>
                 <div className="flex items-center">
+                <span className="mr-1">%</span>
                   <Input
                     id="utilizationRate"
                     type="number"
@@ -188,7 +188,6 @@ export default function RevenueEstimator() {
                     min={1}
                     max={100}
                   />
-                  <span className="ml-1">%</span>
                 </div>
               </div>
               <Slider
@@ -222,6 +221,31 @@ export default function RevenueEstimator() {
                 max={25}
                 step={1}
                 onValueChange={(value) => setMetrics({ ...currentMetrics, foodRevenuePerUser: value[0] })}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="hoursPerDay" className="flex items-center gap-1">
+                  Percentage of Pc users buying food
+                </Label>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  id="hoursPerDay"
+                  type="number"
+                  value={currentMetrics.foodConsumerRate}
+                  onChange={(e) => setMetrics({ ...currentMetrics, foodConsumerRate: Number(e.target.value) })}
+                  className="w-20 text-right"
+                  min={1}
+                  max={100}
+                />
+              </div>
+              <Slider
+                value={[currentMetrics.foodConsumerRate]}
+                min={1}
+                max={100}
+                step={1}
+                onValueChange={(value) => setMetrics({ ...currentMetrics, foodConsumerRate: value[0] })}
               />
             </div>
           </CardContent>
@@ -389,44 +413,33 @@ export default function RevenueEstimator() {
                 <CardTitle>Revenue Analysis</CardTitle>
                 <CardDescription>Current revenue and potential revenue</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <div className="space-y-2 bg-purple-300">
-                      <ChartContainer
-                        config={{
-                          converting: {
-                            label: "Converting",
-                            color: "hsl(var(--chart-1))",
-                          },
-                          nonConverting: {
-                            label: "Non-Converting",
-                            color: "hsl(var(--chart-2))",
-                          },
-                        }}
-                      >
-                        <ResponsiveContainer width="100%" height="100%">
-                          <PieChart>
-                            <ChartTooltip content={<ChartTooltipContent />} />
-                            <Pie
-                              data={pieData}
-                              dataKey="value"
-                              nameKey="name"
-                              cx="50%"
-                              cy="50%"
-                              outerRadius={80}
-                              label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
-                            />
-                          </PieChart>
-                        </ResponsiveContainer>
-                      </ChartContainer>
-                      </div>
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>0%</span>
-                        <span>50%</span>
-                        <span>100%</span>
-                      </div>
-                    </div>
+              <CardContent className="grid grid-cols-2 space-y-6">
+                <div className="h-full space-y-2">
+                    <ChartContainer
+                      config={{
+                        converting: {
+                          label: "Computer revenue",
+                        },
+                        nonConverting: {
+                          label: "Food revenue",
+                        },
+                      }}
+                    >
+
+                        <PieChart>
+                          <ChartTooltip content={<ChartTooltipContent />} />
+                          <Pie
+                            data={pieData}
+                            dataKey="value"
+                            nameKey="name"
+                            cx="50%"
+                            cy="50%"
+                            outerRadius={50}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                          />
+                        </PieChart>
+
+                    </ChartContainer>
                   </div>
 
                   <div className="h-[200px]">
@@ -466,9 +479,7 @@ export default function RevenueEstimator() {
                     </ResponsiveContainer>
                   </div>
 
-                  <Separator />
-
-                  <div className="space-y-4">
+                  <div className="space-y-4 col-span-2">
                   <div>
                     <h4 className="text-sm font-medium mb-1">Current Metrics</h4>
                     <div className="grid grid-cols-2 gap-4">
