@@ -1,10 +1,13 @@
 "use client";
 
 import Image from "next/image";
-export default function RevenueEstimator() {
+import CyberpunkNavbar from "@/components/CyberpunkNavbar"
 
+
+export default function Home() {
   return (
-    <div className="container mx-auto pb-10 px-4 max-w-5xl">
+    <div className="flex justify-center mx-auto">
+      <CyberpunkNavbar />
       <div className="flex flex-col items-center text-center">
         <Image
           src="/logo.png"
