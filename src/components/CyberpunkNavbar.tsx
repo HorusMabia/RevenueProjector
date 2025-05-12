@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
+import Image from "next/image";
 import { Menu, X, ChevronDown } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -13,30 +14,26 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "MAIN ZONE",
-    href: "/main-zone",
+    label: "Metrics Impact",
+    href: "/metrics-impact",
   },
   {
-    label: "VIP ZONE",
-    href: "/vip-zone",
+    label: "Food & Beverage Bundle",
+    href: "/food-bundle",
   },
   {
-    label: "PS ZONE",
-    href: "/ps-zone",
+    label: "Menue Display Demo",
+    href: "/bigpic",
   },
-  {
-    label: "GAMEPLAY",
-    href: "#",
-    children: [
-      { label: "RATES", href: "/rates" },
-      { label: "TOURNAMENTS", href: "/tournaments" },
-      { label: "EVENTS", href: "/events" },
-    ],
-  },
-  {
-    label: "ABOUT",
-    href: "/about",
-  },
+  // {
+  //   label: "GAMEPLAY",
+  //   href: "#",
+  //   children: [
+  //     { label: "RATES", href: "/rates" },
+  //     { label: "TOURNAMENTS", href: "/tournaments" },
+  //     { label: "EVENTS", href: "/events" },
+  //   ],
+  // },
 ]
 
 export default function CyberpunkNavbar() {
@@ -84,9 +81,8 @@ export default function CyberpunkNavbar() {
       )}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
+        <div className="flex items-center justify-center h-16">
+          <div className="flex flex-shrink-0 items-center">
             <Link
               href="/"
               className={cn(
@@ -96,9 +92,12 @@ export default function CyberpunkNavbar() {
                 glitchEffect && "animate-text-glitch",
               )}
             >
-              <span className="text-2xl">CYBER</span>
-              <span className="text-2xl relative inline-block animate-pulse-slow">PUNK</span>
-              <span className="text-blue-500 text-sm ml-1 tracking-widest">CANGGU</span>
+              <Image
+                src="/cyberpunkLogo.jpg"
+                alt="Logo"
+                width={200}
+                height={200}
+              />
             </Link>
           </div>
 
@@ -178,8 +177,9 @@ export default function CyberpunkNavbar() {
 
               {/* CTA Button */}
               <Link
-                href="/signup"
+                href="/"
                 className={cn(
+                  "hidden",
                   "px-4 py-1.5 text-sm font-medium rounded-md",
                   "bg-yellow-500/10 text-yellow-300 border border-yellow-500/50",
                   "hover:bg-yellow-500/20 transition-all duration-300",
