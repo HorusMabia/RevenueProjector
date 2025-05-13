@@ -14,7 +14,7 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   {
-    label: "Metrics Impact",
+    label: "unfinished",
     href: "/metrics-impact",
   },
   {
@@ -22,7 +22,7 @@ const navItems: NavItem[] = [
     href: "/food-bundle",
   },
   {
-    label: "Menue Display Demo",
+    label: "Metrics Impact",
     href: "/bigpic",
   },
   // {
