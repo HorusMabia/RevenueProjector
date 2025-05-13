@@ -23,15 +23,15 @@ import { Label } from "@/components/ui/label"
 
 function ConversionRevenueChart() {
   const [conversionRate, setConversionRate] = useState(30)
-  const [averageSpending, setAverageSpending] = useState(50)
+  const [averageSpending, setAverageSpending] = useState(10)
   const [discountRate, setDiscountRate] = useState(15)
   const [totalUser, setTotalUsers] = useState(10000)
 
   // Calculate pie chart data based on conversion rate
   const pieData = useMemo(
     () => [
-      { name: "Converting", value: conversionRate, fill: "orange" },
-      { name: "Non-Converting", value: 100 - conversionRate, fill: "purple" },
+      { name: "Food customers", value: conversionRate, fill: "orange" },
+      { name: "Customers", value: 100 - conversionRate, fill: "purple" },
     ],
     [conversionRate],
   )
@@ -40,16 +40,22 @@ function ConversionRevenueChart() {
   const revenueData = useMemo(() => {
     const adoptionRate: number[] = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
-    return adoptionRate.map((bundleAdoptionRate) => {
+    return adoptionRate.map((bundleAdoptionRate:number) => {
       const baseFoodRevenue = Math.round(totalUser * (conversionRate / 100) * averageSpending)
       const bundleFoodRevenue = Math.round(totalUser * (bundleAdoptionRate / 100) * averageSpending * (1 - discountRate /100)) // Base revenue stays constant per month
 
       return {
+        adoptionRate: bundleAdoptionRate,
         baseFoodRevenue,
         bundleFoodRevenue,
       }
     })
   }, [totalUser, conversionRate, averageSpending, discountRate])
+
+  const minimumAdoptionRateForProfit = useMemo(() => {
+    return discountRate === 100 ? Infinity : Math.round((conversionRate / (1 - discountRate / 100)));
+  }, [conversionRate, discountRate])
+
 
   const handleBaseRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value) || 0
@@ -57,7 +63,7 @@ function ConversionRevenueChart() {
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 lg:grid-cols-4 gap-2">
       <Card className="col-span-1">
         <CardHeader>
           <CardTitle>Conversion Rate</CardTitle>
@@ -85,9 +91,9 @@ function ConversionRevenueChart() {
             <Slider
               value={[averageSpending]}
               onValueChange={(value) => setAverageSpending(value[0])}
-              min={10}
-              max={200}
-              step={5}
+              min={5}
+              max={50}
+              step={1}
               className="mb-6"
             />
 
@@ -141,7 +147,7 @@ function ConversionRevenueChart() {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                    label={({ name }) => `${name}`}
                   />
                 </PieChart>
               </ResponsiveContainer>
@@ -150,7 +156,7 @@ function ConversionRevenueChart() {
         </CardContent>
       </Card>
 
-      <Card className="col-span-2">
+      <Card className="col-span-3">
         <CardHeader>
           <CardTitle>Revenue Breakdown</CardTitle>
           <CardDescription>
@@ -158,7 +164,7 @@ function ConversionRevenueChart() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-fit">
+          <div className="h-fit w-full">
             <ChartContainer
               config={{
                 baseRevenue: {
@@ -175,7 +181,7 @@ function ConversionRevenueChart() {
                 }
               }}
             >
-              <ResponsiveContainer width="100%" height={400}>
+              <ResponsiveContainer width="100%" className={"border-4"}>
                 <BarChart 
                   data={revenueData.map((item, index) => ({
                     ...item,
@@ -183,34 +189,26 @@ function ConversionRevenueChart() {
                   }))}
                 >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="adoption" label={{ value: "Bundle Adoption Rate", position: "insideBottom", offset: -10 }} />
+                  <XAxis dataKey="adoption" />
                   <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
                   <Tooltip
                     formatter={(value) => [`$${Number(value).toLocaleString()}`, undefined]}
                     labelFormatter={(label) => `Adoption rate: ${label}`}
                   />
                   <Legend />
-                  <Bar dataKey="baseFoodRevenue" fill="purple" name="Base Revenue" />
-                  <Bar dataKey="bundleFoodRevenue" fill="orange" name="Bundle Revenue" />
+                  <Bar dataKey="baseFoodRevenue" fill="purple" name="Base Revenue"/>
+                  <Bar dataKey="bundleFoodRevenue" fill="orange" name="Bundle Revenue"/>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </div>
-          {/* <div className="mt-4 text-sm text-gray-500">
-            <p>Revenue breakdown for {revenueData[0].month}:</p>
-            <ul className="list-disc pl-5 mt-2">
-              <li>Base revenue: ${totalUser.toLocaleString()}</li>
-              <li>
-                Food revenue: ${revenueData[0].foodRevenue.toLocaleString()}({conversionRate}% of{" "}
-                {revenueData[0].customers.toLocaleString()} customers × ${averageSpending})
-              </li>
-              <li>Total revenue: ${revenueData[0].totalRevenue.toLocaleString()}</li>
-              <li>
-                Food revenue contribution:{" "}
-                {((revenueData[0].foodRevenue / revenueData[0].totalRevenue) * 100).toFixed(1)}% of total
-              </li>
-            </ul>
-          </div> */}
+          <div className="mt-4 text-sm text-gray-500">
+            <p>Daily evenue breakdown:</p>
+            <p>Food Bundle is profitable at
+               <span className={`text-green-500 text-xl font-bold px-1 ${minimumAdoptionRateForProfit<35 ? "text-gree-500":minimumAdoptionRateForProfit<65?"text-orange-500":"text-red-500"}`}>{minimumAdoptionRateForProfit.toLocaleString()}%
+                </span> 
+               bundle adoption rate</p>
+          </div>
         </CardContent>
       </Card>
     </div>
