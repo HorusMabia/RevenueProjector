@@ -24,46 +24,41 @@ import { Label } from "@/components/ui/label"
 function ConversionRevenueChart() {
   const [conversionRate, setConversionRate] = useState(30)
   const [averageSpending, setAverageSpending] = useState(50)
-  const [baseRevenue, setBaseRevenue] = useState(10000)
+  const [discountRate, setDiscountRate] = useState(15)
+  const [totalUser, setTotalUsers] = useState(10000)
 
   // Calculate pie chart data based on conversion rate
   const pieData = useMemo(
     () => [
-      { name: "Converting", value: conversionRate, fill: "blue" },
-      { name: "Non-Converting", value: 100 - conversionRate, fill: "turquoise" },
+      { name: "Converting", value: conversionRate, fill: "orange" },
+      { name: "Non-Converting", value: 100 - conversionRate, fill: "purple" },
     ],
     [conversionRate],
   )
 
   // Calculate revenue data for bar chart
   const revenueData = useMemo(() => {
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun"]
-    const baseCustomers = 1000
-    const monthlyGrowth = 0.05
+    const adoptionRate: number[] = [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]
 
-    return months.map((month, index) => {
-      const customers = Math.round(baseCustomers * Math.pow(1 + monthlyGrowth, index))
-      const foodRevenue = Math.round(customers * (conversionRate / 100) * averageSpending)
-      const monthlyBaseRevenue = baseRevenue // Base revenue stays constant per month
+    return adoptionRate.map((bundleAdoptionRate) => {
+      const baseFoodRevenue = Math.round(totalUser * (conversionRate / 100) * averageSpending)
+      const bundleFoodRevenue = Math.round(totalUser * (bundleAdoptionRate / 100) * averageSpending * (1 - discountRate /100)) // Base revenue stays constant per month
 
       return {
-        month,
-        customers,
-        baseRevenue: monthlyBaseRevenue,
-        foodRevenue: foodRevenue,
-        totalRevenue: monthlyBaseRevenue + foodRevenue,
+        baseFoodRevenue,
+        bundleFoodRevenue,
       }
     })
-  }, [conversionRate, averageSpending, baseRevenue])
+  }, [totalUser, conversionRate, averageSpending, discountRate])
 
   const handleBaseRevenueChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value) || 0
-    setBaseRevenue(value)
+    setTotalUsers(value)
   }
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <Card className="col-span-1">
         <CardHeader>
           <CardTitle>Conversion Rate</CardTitle>
           <CardDescription>Percentage of customers who convert to food purchases</CardDescription>
@@ -103,12 +98,25 @@ function ConversionRevenueChart() {
               <Input
                 id="baseRevenue"
                 type="number"
-                value={baseRevenue}
+                value={totalUser}
                 onChange={handleBaseRevenueChange}
                 min={0}
                 className="mb-2"
               />
             </div>
+
+            <div className="flex justify-between mb-2">
+              <span>Discount Rate:</span>
+              <span className="font-bold">{discountRate}%</span>
+            </div>
+            <Slider
+              value={[discountRate]}
+              onValueChange={(value) => setDiscountRate(value[0])}
+              min={0}
+              max={100}
+              step={1}
+              className="mb-6"
+            />
           </div>
           <div className="h-[300px]">
             <ChartContainer
@@ -142,7 +150,7 @@ function ConversionRevenueChart() {
         </CardContent>
       </Card>
 
-      <Card>
+      <Card className="col-span-2">
         <CardHeader>
           <CardTitle>Revenue Breakdown</CardTitle>
           <CardDescription>
@@ -150,39 +158,48 @@ function ConversionRevenueChart() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px]">
+          <div className="h-fit">
             <ChartContainer
               config={{
                 baseRevenue: {
                   label: "Base Revenue",
-                  color: "hsl(var(--chart-3))",
+                  color: "purple",
                 },
-                foodRevenue: {
-                  label: "Food Revenue",
-                  color: "hsl(var(--chart-4))",
+                bundleRevenue: {
+                  label: "Bundle Revenue",
+                  color: "orange",
                 },
+                difference: {
+                  label: "Revenue Difference",
+                  color: "green",
+                }
               }}
             >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={revenueData}>
+              <ResponsiveContainer width="100%" height={400}>
+                <BarChart 
+                  data={revenueData.map((item, index) => ({
+                    ...item,
+                    adoption: `${(index + 1) * 10}%`
+                  }))}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
+                  <XAxis dataKey="adoption" label={{ value: "Bundle Adoption Rate", position: "insideBottom", offset: -10 }} />
                   <YAxis tickFormatter={(value) => `$${value.toLocaleString()}`} />
                   <Tooltip
                     formatter={(value) => [`$${Number(value).toLocaleString()}`, undefined]}
-                    labelFormatter={(label) => `Month: ${label}`}
+                    labelFormatter={(label) => `Adoption rate: ${label}`}
                   />
                   <Legend />
-                  <Bar dataKey="baseRevenue" stackId="a" fill="hsl(var(--chart-3))" name="Base Revenue" />
-                  <Bar dataKey="foodRevenue" stackId="a" fill="hsl(var(--chart-4))" name="Food Revenue" />
+                  <Bar dataKey="baseFoodRevenue" fill="purple" name="Base Revenue" />
+                  <Bar dataKey="bundleFoodRevenue" fill="orange" name="Bundle Revenue" />
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
           </div>
-          <div className="mt-4 text-sm text-gray-500">
+          {/* <div className="mt-4 text-sm text-gray-500">
             <p>Revenue breakdown for {revenueData[0].month}:</p>
             <ul className="list-disc pl-5 mt-2">
-              <li>Base revenue: ${baseRevenue.toLocaleString()}</li>
+              <li>Base revenue: ${totalUser.toLocaleString()}</li>
               <li>
                 Food revenue: ${revenueData[0].foodRevenue.toLocaleString()}({conversionRate}% of{" "}
                 {revenueData[0].customers.toLocaleString()} customers × ${averageSpending})
@@ -193,7 +210,7 @@ function ConversionRevenueChart() {
                 {((revenueData[0].foodRevenue / revenueData[0].totalRevenue) * 100).toFixed(1)}% of total
               </li>
             </ul>
-          </div>
+          </div> */}
         </CardContent>
       </Card>
     </div>
@@ -203,10 +220,6 @@ function ConversionRevenueChart() {
 export default function Home() {
   return (
     <main className="container mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-6 text-center">Conversion Rate & Revenue Dashboard</h1>
-      <p className="text-gray-500 mb-8 text-center max-w-2xl mx-auto">
-        Adjust the conversion rate slider to see how different conversion rates affect your projected revenue.
-      </p>
       <ConversionRevenueChart />
     </main>
   )
