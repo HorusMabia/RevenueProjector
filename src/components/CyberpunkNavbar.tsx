@@ -39,17 +39,7 @@ const navItems: NavItem[] = [
 export default function CyberpunkNavbar() {
   const [isOpen, setIsOpen] = useState(false)
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
-  const [scrolled, setScrolled] = useState(false)
   const [glitchEffect, setGlitchEffect] = useState(false)
-
-  // Handle scroll effect
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   // Random glitch effect
   useEffect(() => {
@@ -75,8 +65,7 @@ export default function CyberpunkNavbar() {
   return (
     <nav
       className={cn(
-        "fixed top-0 w-full z-50 transition-all duration-300",
-        scrolled ? "bg-black/90 backdrop-blur-md" : "bg-black/70",
+        "top-0 w-full transition-all duration-300 pb-8",
         glitchEffect && "animate-glitch",
       )}
     >

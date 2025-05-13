@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { BadgeIndianRupee, Calculator, Info, Users } from "lucide-react";
 // import {
 //   Bar,
@@ -65,16 +64,6 @@ export default function RevenueEstimator() {
 
   return (
     <div className="container mx-auto pb-10 px-4 max-w-5xl">
-      <div className="flex flex-col items-center text-center">
-        <Image
-          src="/logo.png"
-          alt="Logo"
-          width={400}
-          height={400}
-          className="m-0 p-0 "
-        />
-      </div>
-
       <div className="grid gap-8 md:grid-cols-12">
         <div className="md:col-span-5">
           <Card className=" border-4 border-red-500 ">
